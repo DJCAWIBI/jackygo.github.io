@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cabify - Tu viaje en un tap</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <!-- Mapa de fondo -->
+    <div id="map"></div>
+    
+    <!-- Overlay de contenido -->
+    <div class="app-overlay">
+        <!-- Header fijo -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 id="view-title">Crea una contraseña</h1>
+                <p id="view-subtitle">Necesitarás 8 o más caracteres.</p>
+            </div>
+        </header>
+
+        <!-- Contenido principal -->
+        <main class="app-main">
+            <!-- Vista de Registro -->
+            <div id="register-view" class="view active">
+                <div class="container">
+                    <div class="input-group">
+                        <label for="password-input" class="input-label">Contraseña</label>
+                        <input type="password" id="password-input" class="input-field" placeholder="Ingresa tu contraseña">
+                        <div class="password-strength">
+                            <div class="strength-bar"></div>
+                            <div class="strength-text">Seguridad de la contraseña</div>
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="nextView('phone-view')">Continuar</button>
+                </div>
+            </div>
+
+            <!-- Vista de Teléfono -->
+            <div id="phone-view" class="view">
+                <div class="container">
+                    <div class="welcome-message">
+                        <h2>¡Muévete por la ciudad de forma segura!</h2>
+                        <p>Estás más cerca de tu destino con Cabify</p>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">Prefijo</label>
+                        <select class="input-field">
+                            <option>+51 Perú</option>
+                            <option>+1 USA</option>
+                            <option>+34 España</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">Celular</label>
+                        <input type="tel" class="input-field" value="900 571 320">
+                    </div>
+                    
+                    <div class="promo-banner">
+                        <span class="promo-icon">🎁</span>
+                        <span>¡Regístrate y disfruta de un descuento de bienvenida!</span>
+                    </div>
+                    
+                    <div class="terms">
+                        Al continuar, aceptas la <a href="#">Política de privacidad</a> y los <a href="#">Términos de uso</a> de Cabify.
+                    </div>
+                    
+                    <button class="btn-primary" onclick="nextView('trip-planning-view')">Siguiente</button>
+                </div>
+            </div>
+
+            <!-- Vista de Planificación de Viaje -->
+            <div id="trip-planning-view" class="view">
+                <div class="container">
+                    <div class="trip-header">
+                        <div class="location-input active">
+                            <div class="input-marker">1</div>
+                            <div class="input-content">
+                                <div class="input-label">Recogida</div>
+                                <input type="text" class="location-input-field" value="Villarreal, Iquitos" readonly>
+                            </div>
+                        </div>
+                        
+                        <div class="location-input">
+                            <div class="input-marker">2</div>
+                            <div class="input-content">
+                                <div class="input-label">Destino</div>
+                                <input type="text" class="location-input-field" placeholder="¿A dónde vas?" onclick="showDestinationSearch()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="time-selector">
+                        <div class="time-option active">
+                            <span class="time-icon">🚗</span>
+                            <span>Ahora</span>
+                        </div>
+                        <div class="time-option">
+                            <span class="time-icon">📅</span>
+                            <span>Reservar</span>
+                        </div>
+                    </div>
+
+                    <div class="suggested-destinations">
+                        <h3>Destinos populares en Iquitos</h3>
+                        <div class="destination-list">
+                            <div class="destination-item" onclick="selectDestination('Plaza de Armas de Iquitos')">
+                                <span class="dest-icon">🏛️</span>
+                                <span>Plaza de Armas</span>
+                            </div>
+                            <div class="destination-item" onclick="selectDestination('Malecón Tarapacá')">
+                                <span class="dest-icon">🌊</span>
+                                <span>Malecón Tarapacá</span>
+                            </div>
+                            <div class="destination-item" onclick="selectDestination('Mercado Belén')">
+                                <span class="dest-icon">🛒</span>
+                                <span>Mercado Belén</span>
+                            </div>
+                            <div class="destination-item" onclick="selectDestination('Aeropuerto Internacional de Iquitos')">
+                                <span class="dest-icon">✈️</span>
+                                <span>Aeropuerto</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" onclick="nextView('vehicle-selection-view')">Ver vehículos</button>
+                </div>
+            </div>
+
+            <!-- Vista de Búsqueda de Destino -->
+            <div id="destination-search-view" class="view">
+                <div class="container">
+                    <div class="search-header">
+                        <div class="back-button" onclick="previousView()">←</div>
+                        <h3>¿A dónde vas?</h3>
+                    </div>
+                    
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="Buscar destino...">
+                    </div>
+                    
+                    <div class="recent-searches">
+                        <h4>Búsquedas recientes</h4>
+                        <div class="search-item">
+                            <span class="search-icon">📍</span>
+                            <span>Plaza de Armas</span>
+                        </div>
+                        <div class="search-item">
+                            <span class="search-icon">📍</span>
+                            <span>Casa de Fierro</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vista de Selección de Vehículo -->
+            <div id="vehicle-selection-view" class="view">
+                <div class="container">
+                    <div class="trip-summary">
+                        <div class="route">
+                            <div class="route-point">Villarreal</div>
+                            <div class="route-divider">→</div>
+                            <div class="route-point" id="current-destination">Plaza de Armas</div>
+                        </div>
+                        <div class="trip-time">Ahora · Para mí</div>
+                    </div>
+
+                    <div class="flash-sale">
+                        <span class="flash-icon">⚡</span>
+                        <span>Descuento Flash termina en <span id="countdown">04:47</span></span>
+                    </div>
+
+                    <div class="vehicle-options">
+                        <div class="vehicle-option recommended">
+                            <div class="vehicle-info">
+                                <div class="vehicle-name">Cabify</div>
+                                <div class="vehicle-details">
+                                    <span class="vehicle-time">4 min</span>
+                                    <span class="vehicle-seats">4 asientos</span>
+                                </div>
+                            </div>
+                            <div class="vehicle-price">
+                                <div class="current-price">S/ 36.50</div>
+                                <div class="original-price">S/ 37.32</div>
+                            </div>
+                        </div>
+
+                        <div class="vehicle-option">
+                            <div class="vehicle-info">
+                                <div class="vehicle-name">Cabify Plus</div>
+                                <div class="vehicle-details">
+                                    <span class="vehicle-time">9 min</span>
+                                    <span class="vehicle-seats">4 asientos</span>
+                                </div>
+                            </div>
+                            <div class="vehicle-price">
+                                <div class="current-price">S/ 45.00</div>
+                                <div class="original-price">S/ 46.02</div>
+                            </div>
+                        </div>
+
+                        <div class="vehicle-option">
+                            <div class="vehicle-info">
+                                <div class="vehicle-name">Cabify XL</div>
+                                <div class="vehicle-details">
+                                    <span class="vehicle-time">9 min</span>
+                                    <span class="vehicle-seats">6 asientos</span>
+                                </div>
+                            </div>
+                            <div class="vehicle-price">
+                                <div class="current-price">S/ 53.70</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" onclick="nextView('payment-view')">Continuar</button>
+                </div>
+            </div>
+
+            <!-- Vista de Pago -->
+            <div id="payment-view" class="view">
+                <div class="container">
+                    <h3>Método de pago</h3>
+                    
+                    <div class="payment-options">
+                        <div class="payment-option active">
+                            <div class="payment-icon">💵</div>
+                            <div class="payment-info">
+                                <div class="payment-name">Efectivo</div>
+                                <div class="payment-desc">Paga al conductor</div>
+                            </div>
+                            <div class="payment-check">✓</div>
+                        </div>
+                        
+                        <div class="payment-option">
+                            <div class="payment-icon">💳</div>
+                            <div class="payment-info">
+                                <div class="payment-name">Tarjeta de crédito</div>
+                                <div class="payment-desc">•••• 1234</div>
+                            </div>
+                            <div class="payment-check"></div>
+                        </div>
+                    </div>
+
+                    <div class="add-payment-method">
+                        <div class="add-icon">+</div>
+                        <div>Añadir método de pago</div>
+                    </div>
+
+                    <button class="btn-primary" onclick="nextView('confirmation-view')">Continuar</button>
+                </div>
+            </div>
+
+            <!-- Vista de Confirmación -->
+            <div id="confirmation-view" class="view">
+                <div class="container">
+                    <div class="confirmation-header">
+                        <div class="confirmation-icon">✅</div>
+                        <h3>¡Todo listo!</h3>
+                        <p>Tu conductor llegará en aproximadamente 4 minutos</p>
+                    </div>
+
+                    <div class="driver-info">
+                        <div class="driver-avatar">J</div>
+                        <div class="driver-details">
+                            <div class="driver-name">Juan Pérez</div>
+                            <div class="driver-rating">
+                                <span class="stars">★★★★★</span>
+                                <span>4.9</span>
+                            </div>
+                        </div>
+                        <div class="vehicle-plate">ABC-123</div>
+                    </div>
+
+                    <div class="trip-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Vehículo</span>
+                            <span class="detail-value">Toyota Corolla - Gris</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Tiempo estimado</span>
+                            <span class="detail-value">15 min</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Precio final</span>
+                            <span class="detail-value">S/ 36.50</span>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" onclick="completeTrip()">Seguir viaje</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Navegación inferior -->
+        <nav class="bottom-nav">
+            <button class="nav-button" onclick="previousView()">
+                <span>←</span>
+                <span>Atrás</span>
+            </button>
+            <div class="nav-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
+            <button class="nav-button" onclick="nextView()">
+                <span>Siguiente</span>
+                <span>→</span>
+            </button>
+        </nav>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/views.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
